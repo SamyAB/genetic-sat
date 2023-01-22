@@ -9,7 +9,7 @@ pub struct InputArguments {
     population_size: usize,
 
     /// The probability of a solution to randomly change during an iteration
-    #[arg(short, long)]
+    #[arg(short = 'u', long)]
     mutation_probability: f32,
 
     /// The number of iteration of the algorithm before it stops even if no perfect solution is found
