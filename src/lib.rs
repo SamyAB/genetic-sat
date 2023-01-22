@@ -1,5 +1,9 @@
+pub mod parse_arguments;
+
 mod parse_dimacs;
-use std::{collections::HashMap, path::Path};
+
+use parse_arguments::InputArguments;
+use std::collections::HashMap;
 
 #[derive(Debug, PartialEq)]
 pub struct Formula {
@@ -14,13 +18,6 @@ pub struct Clause {
 #[derive(Debug)]
 pub struct Solution {
     pub literals: Vec<bool>,
-}
-
-pub struct InputParameters {
-    population_size: usize,
-    mutation_probability: f32,
-    maximum_number_of_generations: Option<usize>,
-    formula_path: Path,
 }
 
 impl Solution {
@@ -54,3 +51,5 @@ impl Solution {
         false
     }
 }
+
+pub fn run(args: InputArguments) {}
