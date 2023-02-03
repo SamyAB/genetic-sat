@@ -52,4 +52,12 @@ impl Solution {
     }
 }
 
-pub fn run(args: InputArguments) {}
+pub fn run(args: InputArguments) {
+    let formula = parse_dimacs::parse_dimacs_formula_from_file(&args.formula_path);
+    let solution = Solution {
+        literals: vec![true, false, false, true, false, true, true, true, true],
+    };
+    let score = solution.evaluate(&formula);
+
+    println!("The solution has a score of {}", score);
+}
