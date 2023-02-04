@@ -1,5 +1,5 @@
+mod optimizer;
 pub mod parse_arguments;
-
 mod parse_dimacs;
 
 use parse_arguments::InputArguments;
@@ -8,6 +8,7 @@ use std::collections::HashMap;
 #[derive(Debug, PartialEq)]
 pub struct Formula {
     pub clauses: Vec<Clause>,
+    pub number_of_literals: usize,
 }
 
 #[derive(Debug, PartialEq)]
@@ -15,7 +16,7 @@ pub struct Clause {
     pub literals: HashMap<usize, bool>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Solution {
     pub literals: Vec<bool>,
 }
@@ -54,10 +55,13 @@ impl Solution {
 
 pub fn run(args: InputArguments) {
     let formula = parse_dimacs::parse_dimacs_formula_from_file(&args.formula_path);
-    let solution = Solution {
-        literals: vec![true, false, false, true, false, true, true, true, true],
-    };
-    let score = solution.evaluate(&formula);
+    let best_solution = optimizer::optimize(
+        &formula,
+        args.population_size,
+        args.maximum_number_of_generations,
+    );
 
-    println!("The solution has a score of {}", score);
+    let best_fitness = best_solution.evaluate(&formula);
+    println!("The best solution is {:?}", best_solution);
+    println!("It has a fitness of {best_fitness}");
 }

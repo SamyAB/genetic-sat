@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 
 use std::io::{prelude::*, BufReader};
@@ -10,6 +10,7 @@ pub fn parse_dimacs_formula_from_file(file_path: &Path) -> Formula {
     let file = File::open(file_path).expect("Could not read formula file");
     let reader = BufReader::new(file);
     let mut clauses = Vec::new();
+    let mut all_literals: HashSet<usize> = HashSet::new();
 
     for line in reader.lines() {
         let literal_values_as_string =
@@ -22,10 +23,16 @@ pub fn parse_dimacs_formula_from_file(file_path: &Path) -> Formula {
         }
 
         let clause = parse_clause(&literal_values_as_string);
+        let literals_set: HashSet<usize> = clause.literals.keys().cloned().collect();
+        all_literals.extend(&literals_set);
         clauses.push(clause);
     }
 
-    Formula { clauses }
+    let number_of_literals = all_literals.len();
+    Formula {
+        clauses,
+        number_of_literals,
+    }
 }
 
 fn parse_clause(clause_as_string: &str) -> Clause {
@@ -164,10 +171,46 @@ p cnf 4  5
                 expected_fourth_clause,
                 expected_fifth_clause,
             ],
+            number_of_literals: 4,
         };
 
         let formula = parse_dimacs_formula_from_file(dimacs_file_path.as_path());
 
         assert_eq!(formula, expected_formula);
+    }
+
+    #[test]
+    fn parse_dimacs_formula_from_file_should_fill_assign_the_number_of_literals_in_the_formula() {
+        let tmp_dir = tempdir().expect("Could not create test temporary directory");
+        let dimacs_file_path = tmp_dir.path().join("dimacs.cnf");
+        let mut dimacs_file =
+            File::create(&dimacs_file_path).expect("Temporary test file could not be created");
+        write!(
+            dimacs_file,
+            "\
+c This formula has been created to test cugen
+c
+c    horn? no
+c    forced? no
+c    mixed sat? no
+c    clause length = 3
+c
+p cnf 4  5
+ 1 -2 3 4 0
+3 0
+-2 0
+1 0
+4 0
+%
+0
+"
+        )
+        .expect("Could not write content in dimacs file");
+
+        let expected_number_of_literals = 4;
+
+        let formula = parse_dimacs_formula_from_file(&dimacs_file_path);
+
+        assert_eq!(formula.number_of_literals, expected_number_of_literals);
     }
 }
