@@ -14,6 +14,10 @@ pub struct InputArguments {
     #[arg(short = 'u', long)]
     pub mutation_probability: f32,
 
+    /// The maximum number of breeding individuals in each generation
+    #[arg(short = 'b', long, default_value_t = 10)]
+    pub maximum_of_breeding_individuals_in_a_generation: i32,
+
     /// The number of iteration of the algorithm before it stops even if no perfect solution is found
     #[arg(short, long)]
     pub maximum_number_of_generations: i32,

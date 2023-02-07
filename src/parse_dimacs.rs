@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::path::Path;
 
-use crate::{Clause, Formula};
+use crate::sat::{Clause, Formula};
 
 pub fn parse_dimacs_formula_from_file(file_path: &Path) -> Formula {
     let file = File::open(file_path).expect("Could not read formula file");
