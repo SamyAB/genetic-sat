@@ -23,9 +23,9 @@ impl Population {
             .individuals
             .iter()
             .map(|solution| solution.evaluate(formula))
-            .collect();
+            .collect::<Vec<_>>();
         self.best_fitness = Population::best_fitness(&population_fitness);
-        population_fitness
+        population_fitness.to_vec()
     }
 
     fn generate_random_individuals(
@@ -65,7 +65,7 @@ impl Population {
             .clone()
     }
 
-    fn best_fitness(population_fitness: &Vec<f32>) -> f32 {
+    fn best_fitness(population_fitness: &[f32]) -> f32 {
         population_fitness
             .iter()
             .cloned()
@@ -78,13 +78,13 @@ impl Population {
             })
     }
 
-    fn map_fitness_to_individuals(&self, population_fitness: &Vec<f32>) -> Vec<(Solution, f32)> {
+    fn map_fitness_to_individuals(&self, population_fitness: &[f32]) -> Vec<(Solution, f32)> {
         let mut individual_fitness_map: Vec<(Solution, f32)> = Vec::new();
         for (individual_index, individual) in self.individuals.iter().enumerate() {
-            let individual_fitness = population_fitness.get(individual_index)
+            let individual_fitness = *population_fitness.get(individual_index)
                 .expect("The population fitness does not have the same number of elements as the number of individuals");
-            if individual_fitness > &0. {
-                individual_fitness_map.push((individual.clone(), individual_fitness.clone()));
+            if individual_fitness > 0. {
+                individual_fitness_map.push((individual.clone(), individual_fitness));
             }
         }
 
@@ -126,9 +126,9 @@ impl Population {
                 .zip(second_parent.literals.iter())
                 .map(|(first_parent_literal, second_parent_literal)| {
                     if rand::random() {
-                        first_parent_literal.clone()
+                        *first_parent_literal
                     } else {
-                        second_parent_literal.clone()
+                        *second_parent_literal
                     }
                 })
                 .collect();
@@ -185,7 +185,7 @@ impl Population {
 
     fn next_generation(
         &self,
-        population_fitness: &Vec<f32>,
+        population_fitness: &[f32],
         maximum_number_of_breeding_individuals: i32,
         number_of_individuals_in_generation: i32,
         mutation_probability: f32,
