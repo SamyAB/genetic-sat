@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 
@@ -15,10 +16,10 @@ pub fn parse_dimacs_formula_from_file(file_path: &Path) -> Formula {
     for line in reader.lines() {
         let literal_values_as_string =
             line.expect("Formula file contains non valid UTF8 character");
-        if literal_values_as_string.starts_with("c") || literal_values_as_string.starts_with("p") {
+        if literal_values_as_string.starts_with('c') || literal_values_as_string.starts_with('p') {
             continue;
         }
-        if literal_values_as_string.contains("%") {
+        if literal_values_as_string.contains('%') {
             break;
         }
 
@@ -42,12 +43,18 @@ fn parse_clause(clause_as_string: &str) -> Clause {
         let literal_value: i32 = literal_value_as_string
             .parse()
             .expect("Formula file contains a literal that is not an interger");
-        if literal_value < 0 {
-            let literal_key = (literal_value * -1) as usize - 1;
-            literals.insert(literal_key, false);
-        } else if literal_value > 0 {
-            let literal_key = literal_value as usize - 1;
-            literals.insert(literal_key, true);
+        match literal_value.cmp(&0) {
+            Ordering::Less => {
+                let literal_key = -literal_value as usize - 1;
+                literals.insert(literal_key, false);
+            }
+            Ordering::Greater => {
+                let literal_key = literal_value as usize - 1;
+                literals.insert(literal_key, true);
+            }
+            Ordering::Equal => {
+                println!("There is a 0 literal in the dimacs file. It will be ignored");
+            }
         }
     }
 
