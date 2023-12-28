@@ -19,23 +19,27 @@ pub struct Solution {
 impl Solution {
     /// This returns the ratio of clauses that the solution
     /// satisfies
-    pub fn evaluate(&self, formula: &Formula) -> f32 {
-        let mut num_satisfied_clauses = 0;
+    pub fn evaluate(&self, formula: &Formula) -> f64 {
+        let num_satisfied_clauses = formula
+            .clauses
+            .iter()
+            .filter(|clause| self.satisfies_clause(clause))
+            .count();
 
-        for clause in formula.clauses.iter() {
-            if self.satisfies_clause(clause) {
-                num_satisfied_clauses += 1;
-            }
-        }
-
-        num_satisfied_clauses as f32 / formula.clauses.len() as f32
+        f64::from(
+            u32::try_from(num_satisfied_clauses)
+                .expect("The number of clauses should be less than the maximum value of u32"),
+        ) / f64::from(
+            u32::try_from(formula.clauses.len())
+                .expect("The number of clauses should be less than the maximum value of u32"),
+        )
     }
 
     /// Returns true if at least one of the literals in the clause
     /// has the same value as its matching literal in the solution.
     /// Returns false otherwise
     pub fn satisfies_clause(&self, clause: &Clause) -> bool {
-        for (literal_number, literal_value) in clause.literals.iter() {
+        for (literal_number, literal_value) in &clause.literals {
             let associated_solution_value = self
                 .literals
                 .get(*literal_number)

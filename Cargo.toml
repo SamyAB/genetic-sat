@@ -12,3 +12,15 @@ rand = "0.8.5"
 
 [dev-dependencies]
 tempfile = "3.8.1"
+
+[lints.clippy]
+pedantic = "deny"
+dbg_macro = "deny"
+empty_structs_with_brackets = "deny"
+float_cmp_const = "deny"
+if_then_some_else_none = "deny"
+same_name_method = "deny"
+tests_outside_test_module = "deny"
+unseparated_literal_suffix = "deny"
+unwrap_used = "deny"
+

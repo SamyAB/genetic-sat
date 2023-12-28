@@ -5,8 +5,8 @@ mod sat;
 
 use parse_arguments::InputArguments;
 
-pub fn run(args: InputArguments) {
-    let formula = parse_dimacs::parse_dimacs_formula_from_file(&args.formula_path);
+pub fn run(args: &InputArguments) {
+    let formula = parse_dimacs::from_file(&args.formula_path);
     let best_solution = genetics::optimize(
         &formula,
         args.population_size,
@@ -16,6 +16,6 @@ pub fn run(args: InputArguments) {
     );
 
     let best_fitness = best_solution.evaluate(&formula);
-    println!("The best solution is {:?}", best_solution);
+    println!("The best solution is {best_solution:?}");
     println!("It has a fitness of {best_fitness}");
 }

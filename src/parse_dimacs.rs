@@ -7,7 +7,7 @@ use std::path::Path;
 
 use crate::sat::{Clause, Formula};
 
-pub fn parse_dimacs_formula_from_file(file_path: &Path) -> Formula {
+pub fn from_file(file_path: &Path) -> Formula {
     let file = File::open(file_path).expect("Could not read formula file");
     let reader = BufReader::new(file);
     let mut clauses = Vec::new();
@@ -24,7 +24,7 @@ pub fn parse_dimacs_formula_from_file(file_path: &Path) -> Formula {
         }
 
         let clause = parse_clause(&literal_values_as_string);
-        let literals_set: HashSet<usize> = clause.literals.keys().cloned().collect();
+        let literals_set: HashSet<usize> = clause.literals.clone().into_keys().collect();
         all_literals.extend(&literals_set);
         clauses.push(clause);
     }
@@ -45,11 +45,12 @@ fn parse_clause(clause_as_string: &str) -> Clause {
             .expect("Formula file contains a literal that is not an interger");
         match literal_value.cmp(&0) {
             Ordering::Less => {
-                let literal_key = -literal_value as usize - 1;
+                let literal_key = usize::try_from(literal_value.abs() - 1)
+                    .expect("The absolute value of the literal key is higher greater than 0, substracting 1 from it would still make it a valid usize");
                 literals.insert(literal_key, false);
             }
             Ordering::Greater => {
-                let literal_key = literal_value as usize - 1;
+                let literal_key = usize::try_from(literal_value - 1).expect("The value of the literal key is strictly greater than 0, subtracting 1 from it makes it a valid usize");
                 literals.insert(literal_key, true);
             }
             Ordering::Equal => {
@@ -181,7 +182,7 @@ p cnf 4  5
             number_of_literals: 4,
         };
 
-        let formula = parse_dimacs_formula_from_file(dimacs_file_path.as_path());
+        let formula = from_file(dimacs_file_path.as_path());
 
         assert_eq!(formula, expected_formula);
     }
@@ -216,7 +217,7 @@ p cnf 4  5
 
         let expected_number_of_literals = 4;
 
-        let formula = parse_dimacs_formula_from_file(&dimacs_file_path);
+        let formula = from_file(&dimacs_file_path);
 
         assert_eq!(formula.number_of_literals, expected_number_of_literals);
     }

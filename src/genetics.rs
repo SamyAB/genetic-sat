@@ -7,30 +7,30 @@ use crate::sat::{Formula, Solution};
 
 struct Population {
     individuals: Vec<Solution>, // TODO: replace with something that impl Individual trait
-    best_fitness: f32,
+    best_fitness: f64,
 }
 
 impl Population {
     fn new(individuals: Vec<Solution>) -> Self {
         Population {
             individuals,
-            best_fitness: 0f32,
+            best_fitness: 0_f64,
         }
     }
 
-    fn evaluate(&mut self, formula: &Formula) -> Vec<f32> {
+    fn evaluate(&mut self, formula: &Formula) -> Vec<f64> {
         let population_fitness = self
             .individuals
             .iter()
             .map(|solution| solution.evaluate(formula))
             .collect::<Vec<_>>();
         self.best_fitness = Population::best_fitness(&population_fitness);
-        population_fitness.to_vec()
+        population_fitness
     }
 
     fn generate_random_individuals(
         individual_size: usize,
-        number_of_individuals: i32,
+        number_of_individuals: u32,
     ) -> Vec<Solution> {
         (0..number_of_individuals)
             .map(|_| {
@@ -42,7 +42,7 @@ impl Population {
             .collect()
     }
 
-    fn genesis(individual_size: usize, population_size: i32) -> Self {
+    fn genesis(individual_size: usize, population_size: u32) -> Self {
         let individuals = Population::generate_random_individuals(individual_size, population_size);
         Population::new(individuals)
     }
@@ -65,21 +65,14 @@ impl Population {
             .clone()
     }
 
-    fn best_fitness(population_fitness: &[f32]) -> f32 {
+    fn best_fitness(population_fitness: &[f64]) -> f64 {
         population_fitness
             .iter()
-            .cloned()
-            .fold(0., |current_max, value| {
-                if current_max >= value {
-                    current_max
-                } else {
-                    value
-                }
-            })
+            .fold(0_f64, |maximum, current_value| maximum.max(*current_value))
     }
 
-    fn map_fitness_to_individuals(&self, population_fitness: &[f32]) -> Vec<(Solution, f32)> {
-        let mut individual_fitness_map: Vec<(Solution, f32)> = Vec::new();
+    fn map_fitness_to_individuals(&self, population_fitness: &[f64]) -> Vec<(Solution, f64)> {
+        let mut individual_fitness_map: Vec<(Solution, f64)> = Vec::new();
         for (individual_index, individual) in self.individuals.iter().enumerate() {
             let individual_fitness = *population_fitness.get(individual_index)
                 .expect("The population fitness does not have the same number of elements as the number of individuals");
@@ -92,15 +85,15 @@ impl Population {
     }
 
     fn select_breeding_population(
-        indivudial_fitness_map: &Vec<(Solution, f32)>,
-        number_of_breeding_individuals: i32,
+        indivudial_fitness_map: &Vec<(Solution, f64)>,
+        number_of_breeding_individuals: u32,
     ) -> Vec<Solution> {
         let mut rng = thread_rng();
         indivudial_fitness_map
             .choose_multiple_weighted(&mut rng, number_of_breeding_individuals as usize, |item| {
                 item.1
             })
-            .unwrap()
+            .expect("The choice based on the fitness should not fail, as the weights should all be within the unit interval")
             .map(|item| item.0.clone())
             .collect()
     }
@@ -141,7 +134,7 @@ impl Population {
 
     fn binary_crossover(
         mut breeding_individuals: Vec<Solution>,
-        number_of_individuals: i32,
+        number_of_individuals: u32,
     ) -> Vec<Solution> {
         let mut embrios: Vec<Solution> = Vec::new();
         let mut rng = rand::thread_rng();
@@ -171,7 +164,7 @@ impl Population {
     fn mutation(embrios: Vec<Solution>, mutation_probability: f32) -> Vec<Solution> {
         let mut children: Vec<Solution> = Vec::new();
 
-        for embrio in embrios.into_iter() {
+        for embrio in embrios {
             let mutate: bool = rand::random::<f32>() > mutation_probability;
             if mutate {
                 let mutated_child = Population::flip_random_literal(embrio);
@@ -185,9 +178,9 @@ impl Population {
 
     fn next_generation(
         &self,
-        population_fitness: &[f32],
-        maximum_number_of_breeding_individuals: i32,
-        number_of_individuals_in_generation: i32,
+        population_fitness: &[f64],
+        maximum_number_of_breeding_individuals: u32,
+        number_of_individuals_in_generation: u32,
         mutation_probability: f32,
     ) -> Population {
         let individual_fitness_map = self.map_fitness_to_individuals(population_fitness);
@@ -217,13 +210,13 @@ impl Population {
 
 pub fn optimize(
     formula: &Formula,
-    population_size: i32,
-    maximum_number_of_generations: i32,
-    maximum_number_of_breeding_individuals: i32,
+    population_size: u32,
+    maximum_number_of_generations: u32,
+    maximum_number_of_breeding_individuals: u32,
     mutation_probability: f32,
 ) -> Solution {
     let mut population = Population::genesis(formula.number_of_literals, population_size);
-    let mut all_time_best_fitness = 0f32;
+    let mut all_time_best_fitness = 0_f64;
     let mut all_time_best_individual = population
         .individuals
         .get(0)
@@ -233,23 +226,19 @@ pub fn optimize(
     for generation in 1..maximum_number_of_generations {
         let population_fitness = population.evaluate(formula);
         let generation_best_fitness = population.best_fitness;
-        if generation_best_fitness == 1f32 {
+        if (generation_best_fitness - 1_f64).abs() < f64::EPSILON {
             println!("Prefect individual found!");
             all_time_best_individual = population.best_individual(formula);
             break;
         }
         if generation_best_fitness > all_time_best_fitness {
             println!(
-                "During generation {} new all time best fitness has been found: {}",
-                generation, generation_best_fitness
+                "During generation {generation} new all time best fitness has been found: {generation_best_fitness}"
             );
             all_time_best_fitness = generation_best_fitness;
             all_time_best_individual = population.best_individual(formula);
         } else if generation % 100 == 0 {
-            println!(
-                "The generation {generation}. All time best fitness {}",
-                all_time_best_fitness,
-            );
+            println!("The generation {generation}. All time best fitness {all_time_best_fitness}");
         }
 
         population = population.next_generation(
@@ -303,12 +292,26 @@ mod test {
         );
         for tuple_index in 0..individual_fitness_map.len() {
             assert_eq!(
-                individual_fitness_map.get(tuple_index).unwrap().0,
-                expected_individual_fitness_map.get(tuple_index).unwrap().0
+                individual_fitness_map
+                    .get(tuple_index)
+                    .expect("We are iterating over the indices of the map")
+                    .0,
+                expected_individual_fitness_map
+                    .get(tuple_index)
+                    .expect("The expected map should have the same size as the resulting one")
+                    .0
             );
-            assert_eq!(
-                individual_fitness_map.get(tuple_index).unwrap().1,
-                expected_individual_fitness_map.get(tuple_index).unwrap().1
+            assert!(
+                (individual_fitness_map
+                    .get(tuple_index)
+                    .expect("We are iterating over the indices of the map")
+                    .1
+                    - expected_individual_fitness_map
+                        .get(tuple_index)
+                        .expect("The expected map should have the same size as the resulting one")
+                        .1)
+                    .abs()
+                    < f64::EPSILON
             );
         }
     }
@@ -408,7 +411,7 @@ mod test {
     #[test]
     fn test_choose_individuals_to_breed_returns_an_empty_vector_when_individual_fitness_map_is_empty(
     ) {
-        let individual_fitness_map: Vec<(Solution, f32)> = Vec::new();
+        let individual_fitness_map: Vec<(Solution, f64)> = Vec::new();
         let number_of_breeding_indivuduals = 1;
 
         let breeding_population = Population::select_breeding_population(
