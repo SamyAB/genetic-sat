@@ -1,8 +1,8 @@
+name: "Format & Clippy"
 on:
   push:
     branches: [main]
   pull_request:
-name: check
 jobs:
   fmt:
     runs-on: ubuntu-latest
