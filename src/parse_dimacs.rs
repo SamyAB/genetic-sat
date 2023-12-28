@@ -53,9 +53,7 @@ fn parse_clause(clause_as_string: &str) -> Clause {
                 let literal_key = usize::try_from(literal_value - 1).expect("The value of the literal key is strictly greater than 0, subtracting 1 from it makes it a valid usize");
                 literals.insert(literal_key, true);
             }
-            Ordering::Equal => {
-                println!("There is a 0 literal in the dimacs file. It will be ignored");
-            }
+            Ordering::Equal => (),
         }
     }
 

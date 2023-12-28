@@ -187,7 +187,8 @@ impl Population {
         if individual_fitness_map.len() <= 1 {
             println!("The whole population died. Restarting from scratch");
             return Population::genesis(
-                self.individuals.first()
+                self.individuals
+                    .first()
                     .expect("A generation should always contain individuals")
                     .literals
                     .len(),
@@ -217,7 +218,8 @@ pub fn optimize(
     let mut population = Population::genesis(formula.number_of_literals, population_size);
     let mut all_time_best_fitness = 0_f64;
     let mut all_time_best_individual = population
-        .individuals.first()
+        .individuals
+        .first()
         .expect("Initial population should at least have a single individual")
         .clone();
 
