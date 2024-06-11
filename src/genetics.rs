@@ -269,7 +269,7 @@ mod test {
         let population = Population::new(indivudials);
         let population_fitness = vec![0.1, 0.9];
 
-        let expected_individual_fitness_map = vec![
+        let expected_individual_fitness_map = [
             (
                 Solution {
                     literals: vec![true, false],
@@ -329,7 +329,7 @@ mod test {
         let population = Population::new(individuals);
         let population_fitness = vec![0., 0.5];
 
-        let expected_individual_fitness_map = vec![(
+        let expected_individual_fitness_map = [(
             Solution {
                 literals: vec![false, true],
             },
@@ -347,7 +347,7 @@ mod test {
     #[test]
     fn test_choose_individuals_to_breed_returns_the_whole_input_population_when_number_of_bredding_indivudials_equals_population_size(
     ) {
-        let individuals = vec![
+        let individuals = [
             Solution {
                 literals: vec![true, false],
             },
