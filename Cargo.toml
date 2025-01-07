@@ -7,11 +7,11 @@ authors = ["SamyAB <dev@samyab.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "4.5.21", features = ["derive"] }
+clap = { version = "4.5.24", features = ["derive"] }
 rand = "0.8.5"
 
 [dev-dependencies]
-tempfile = "3.14.0"
+tempfile = "3.15.0"
 
 [lints.clippy]
 dbg_macro = "deny"
@@ -23,4 +23,3 @@ tests_outside_test_module = "deny"
 unseparated_literal_suffix = "deny"
 unwrap_used = "deny"
 pedantic = { level = "deny", priority = -1 }
-

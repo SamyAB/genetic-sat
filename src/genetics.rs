@@ -85,7 +85,7 @@ impl Population {
     }
 
     fn select_breeding_population(
-        indivudial_fitness_map: &Vec<(Solution, f64)>,
+        indivudial_fitness_map: &[(Solution, f64)],
         number_of_breeding_individuals: u32,
     ) -> Vec<Solution> {
         let mut rng = thread_rng();
@@ -111,9 +111,9 @@ impl Population {
     }
 
     fn coupling(couples: Vec<(&Solution, &Solution)>) -> Vec<Solution> {
-        let mut embrios: Vec<Solution> = Vec::new();
+        let mut embryos: Vec<Solution> = Vec::new();
         for (first_parent, second_parent) in couples {
-            let embrio_literals: Vec<bool> = first_parent
+            let embryo_literals: Vec<bool> = first_parent
                 .literals
                 .iter()
                 .zip(second_parent.literals.iter())
@@ -125,21 +125,21 @@ impl Population {
                     }
                 })
                 .collect();
-            embrios.push(Solution {
-                literals: embrio_literals,
+            embryos.push(Solution {
+                literals: embryo_literals,
             });
         }
-        embrios
+        embryos
     }
 
     fn binary_crossover(
         mut breeding_individuals: Vec<Solution>,
         number_of_individuals: u32,
     ) -> Vec<Solution> {
-        let mut embrios: Vec<Solution> = Vec::new();
+        let mut embryos: Vec<Solution> = Vec::new();
         let mut rng = rand::thread_rng();
         loop {
-            if embrios.len() >= number_of_individuals as usize {
+            if embryos.len() >= number_of_individuals as usize {
                 break;
             }
             breeding_individuals.shuffle(&mut rng);
@@ -156,21 +156,21 @@ impl Population {
                         .map(|(_, x)| x),
                 )
                 .collect();
-            embrios.append(&mut Population::coupling(couples));
+            embryos.append(&mut Population::coupling(couples));
         }
         breeding_individuals
     }
 
-    fn mutation(embrios: Vec<Solution>, mutation_probability: f32) -> Vec<Solution> {
+    fn mutation(embryos: Vec<Solution>, mutation_probability: f32) -> Vec<Solution> {
         let mut children: Vec<Solution> = Vec::new();
 
-        for embrio in embrios {
+        for embryo in embryos {
             let mutate: bool = rand::random::<f32>() > mutation_probability;
             if mutate {
-                let mutated_child = Population::flip_random_literal(embrio);
+                let mutated_child = Population::flip_random_literal(embryo);
                 children.push(mutated_child);
             } else {
-                children.push(embrio);
+                children.push(embryo);
             }
         }
         children
@@ -200,9 +200,9 @@ impl Population {
             &individual_fitness_map,
             maximum_number_of_breeding_individuals,
         );
-        let embrios =
+        let embryos =
             Population::binary_crossover(breeding_population, number_of_individuals_in_generation);
-        let next_gen_individuals = Population::mutation(embrios, mutation_probability);
+        let next_gen_individuals = Population::mutation(embryos, mutation_probability);
 
         Population::new(next_gen_individuals)
     }
@@ -412,11 +412,11 @@ mod test {
     fn test_choose_individuals_to_breed_returns_an_empty_vector_when_individual_fitness_map_is_empty(
     ) {
         let individual_fitness_map: Vec<(Solution, f64)> = Vec::new();
-        let number_of_breeding_indivuduals = 1;
+        let number_of_breeding_individuals = 1;
 
         let breeding_population = Population::select_breeding_population(
             &individual_fitness_map,
-            number_of_breeding_indivuduals,
+            number_of_breeding_individuals,
         );
 
         assert_eq!(breeding_population.len(), 0);
