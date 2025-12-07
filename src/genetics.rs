@@ -345,8 +345,8 @@ mod test {
     }
 
     #[test]
-    fn test_choose_individuals_to_breed_returns_the_whole_input_population_when_number_of_bredding_indivudials_equals_population_size(
-    ) {
+    fn test_choose_individuals_to_breed_returns_the_whole_input_population_when_number_of_bredding_indivudials_equals_population_size()
+     {
         let individuals = [
             Solution {
                 literals: vec![true, false],
@@ -373,8 +373,8 @@ mod test {
     }
 
     #[test]
-    fn test_choose_individuals_to_breed_returns_a_vector_of_individuals_with_a_len_equal_to_number_of_breeding_individual(
-    ) {
+    fn test_choose_individuals_to_breed_returns_a_vector_of_individuals_with_a_len_equal_to_number_of_breeding_individual()
+     {
         let individual_fitness_map = vec![
             (
                 Solution {
@@ -409,8 +409,8 @@ mod test {
     }
 
     #[test]
-    fn test_choose_individuals_to_breed_returns_an_empty_vector_when_individual_fitness_map_is_empty(
-    ) {
+    fn test_choose_individuals_to_breed_returns_an_empty_vector_when_individual_fitness_map_is_empty()
+     {
         let individual_fitness_map: Vec<(Solution, f64)> = Vec::new();
         let number_of_breeding_individuals = 1;
 
@@ -423,8 +423,8 @@ mod test {
     }
 
     #[test]
-    fn test_choose_individuals_to_breed_returns_an_individual_vector_with_the_same_length_as_individual_fitness_map_when_it_is_smaller_than_number_of_breeding_population(
-    ) {
+    fn test_choose_individuals_to_breed_returns_an_individual_vector_with_the_same_length_as_individual_fitness_map_when_it_is_smaller_than_number_of_breeding_population()
+     {
         let individual_fitness_map = vec![(
             Solution {
                 literals: vec![true, false],
