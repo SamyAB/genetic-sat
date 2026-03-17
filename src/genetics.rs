@@ -1,12 +1,9 @@
-use rand::{
-    seq::{IteratorRandom, SliceRandom},
-    thread_rng,
-};
+use rand::seq::{IndexedRandom, IteratorRandom, SliceRandom};
 
 use crate::sat::{Formula, Solution};
 
 struct Population {
-    individuals: Vec<Solution>, // TODO: replace with something that impl Individual trait
+    individuals: Vec<Solution>,
     best_fitness: f64,
 }
 
@@ -88,9 +85,9 @@ impl Population {
         indivudial_fitness_map: &[(Solution, f64)],
         number_of_breeding_individuals: u32,
     ) -> Vec<Solution> {
-        let mut rng = thread_rng();
+        let mut rng = rand::rng();
         indivudial_fitness_map
-            .choose_multiple_weighted(&mut rng, number_of_breeding_individuals as usize, |item| {
+            .sample_weighted(&mut rng, number_of_breeding_individuals as usize, |item| {
                 item.1
             })
             .expect("The choice based on the fitness should not fail, as the weights should all be within the unit interval")
@@ -99,7 +96,7 @@ impl Population {
     }
 
     fn flip_random_literal(mut individual: Solution) -> Solution {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let literal_index_to_flip = (0..individual.literals.len())
             .choose(&mut rng)
             .expect("An individual should have at least a single literal");
@@ -137,7 +134,7 @@ impl Population {
         number_of_individuals: u32,
     ) -> Vec<Solution> {
         let mut embryos: Vec<Solution> = Vec::new();
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         loop {
             if embryos.len() >= number_of_individuals as usize {
                 break;
